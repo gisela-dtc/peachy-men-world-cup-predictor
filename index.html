@@ -143,7 +143,7 @@ input:focus,select:focus{outline:none;border-color:#F07B2F;background:#fff}
   <div class="tab" onclick="showPage('bracket')">Bracket</div>
   <div class="tab" onclick="showPage('specials')">Specials</div>
   <div class="tab" onclick="showPage('ranking')">Ranking</div>
-  <div class="tab" onclick="showPage('admin')">Admin</div>
+  <div class="tab" id="admin-tab" style="display:none" onclick="showPage('admin')">Admin</div>
 </div>
 
 <!-- LOADING -->
@@ -284,6 +284,7 @@ input:focus,select:focus{outline:none;border-color:#F07B2F;background:#fff}
 
 <script>
 const APP_KEY='peachy_men';
+const ADMIN_KEY='peachymen';
 const PICKS_OPEN = new Date('2026-06-01T00:00:00');
 const PICKS_CLOSE = new Date('2026-06-10T23:59:59');
 function picksOpen() {
@@ -419,6 +420,8 @@ async function init(){
     return;
   }finally{showLoading(false);}
   setInterval(async()=>{try{await loadAll();renderRanking();}catch(e){}},15000);
+  const urlParams=new URLSearchParams(window.location.search);
+  if(urlParams.get('admin')===ADMIN_KEY){const t=document.getElementById('admin-tab');if(t)t.style.display='';}
 }
 function showLoading(on){document.getElementById('loading').style.display=on?'flex':'none';}
 
@@ -665,10 +668,11 @@ function buildAdminBracket(){
 function loadUserPicks(){
   if(!currentUser||!allPredictions[currentUser]) return;
   const p=allPredictions[currentUser];
-  if(p.groups) Object.entries(p.groups).forEach(([gid,pos])=>{groupPicks[gid]=pos||[];updateGroupUI(gid);});
-  if(p.bracket){bracketPicks=Object.assign({},p.bracket);buildBracket();}
+  if(p.groups){Object.entries(p.groups).forEach(([gid,pos])=>{groupPicks[gid]=pos||[];updateGroupUI(gid);});}
+  if(p.bracket&&Object.keys(p.bracket).length>0){bracketPicks=Object.assign({},p.bracket);buildBracket();}
   if(p.top_scorer) document.getElementById('pick-scorer').value=p.top_scorer;
   if(p.extra_time) document.getElementById('pick-extra-time').value=p.extra_time;
+  updateProgress();
   loadResultsUI();
 }
 function loadResultsUI(){
