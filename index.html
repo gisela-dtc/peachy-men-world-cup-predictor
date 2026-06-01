@@ -359,12 +359,18 @@ let bracketPicks={};
 
 // ===== SUPABASE =====
 async function sb(path,opts){
-  const def={headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'}};
+  const def={headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}};
   const merged=Object.assign({},def,opts||{});
   if(opts&&opts.headers) merged.headers=Object.assign({},def.headers,opts.headers);
-  const res=await fetch(SUPABASE_URL+'/rest/v1/'+path,merged);
+  let finalPath=path;
+  if(opts&&opts.method==='POST'&&(path==='predictions'||path==='results')){
+    finalPath=path+'?on_conflict=app,player_name';
+    if(path==='results') finalPath=path+'?on_conflict=app';
+  }
+  const res=await fetch(SUPABASE_URL+'/rest/v1/'+finalPath,merged);
   const txt=await res.text();
-  return txt?JSON.parse(txt):null;
+  if(!txt||txt==='') return null;
+  try{return JSON.parse(txt);}catch(e){return null;}
 }
 async function loadAll(){
   const [preds,res]=await Promise.all([
