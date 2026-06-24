@@ -269,7 +269,7 @@ input:focus,select:focus{outline:none;border-color:#F07B2F;background:#fff}
         </select>
       </div>
     </div>
-    <button class="btn" onclick="saveResults()">Save results & recalculate</button>
+    <button class="btn" id="admin-save-btn" onclick="saveResults()">Save results & recalculate</button>
     <div id="admin-msg" style="margin-top:8px;font-size:13px;color:#4CAF50;display:none">Results saved. Points updated for everyone.</div>
   </div>
 </div>
@@ -430,9 +430,8 @@ async function init(){
   setInterval(async()=>{try{await loadAll();renderRanking();}catch(e){}},15000);
   if(IS_ADMIN){
     const t=document.getElementById('admin-tab');if(t)t.style.display='';
-    // Admin save results button always enabled
-    const adminBtn=document.querySelector('#admin button.btn');
-    if(adminBtn){adminBtn.disabled=false;adminBtn.style.opacity='1';}
+    const ab=document.getElementById('admin-save-btn');
+    if(ab){ab.disabled=false;ab.style.opacity='1';ab.style.pointerEvents='auto';}
   }
 }
 function showLoading(on){document.getElementById('loading').style.display=on?'flex':'none';}
@@ -725,8 +724,8 @@ async function saveAll(){
 }
 
 async function saveResults(){
-  const btn=document.querySelector('#admin button.btn');
-  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  const ab=document.getElementById('admin-save-btn');
+  if(ab){ab.disabled=true;ab.textContent='Saving...';}
   const groups={};Object.keys(GROUPS).forEach(gid=>{groups[gid]=[0,1,2].map(i=>{const s=document.getElementById('ag_'+gid+'_'+i);return s?s.value:'';}).filter(Boolean);});
   const bracket={};
   [...R32,...R16,...QF,...SF,{id:'third'},{id:'final'}].forEach(m=>{const s=document.getElementById('ab_'+m.id);if(s&&s.value)bracket[m.id]=s.value;});
@@ -738,7 +737,7 @@ async function saveResults(){
     sb('predictions',{method:'POST',body:JSON.stringify({app:APP_KEY,player_name:name,emoji:p.emoji,groups:p.groups||{},bracket:p.bracket||{},top_scorer:p.top_scorer||'',extra_time:p.extra_time||'',points:calcPoints(p,newR),updated_at:new Date().toISOString()})})
   ));
   await loadAll();
-  if(btn){btn.disabled=false;btn.textContent='Save results & recalculate';}
+  if(ab){ab.disabled=false;ab.textContent='Save results & recalculate';}
   const msg=document.getElementById('admin-msg');msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
   renderRanking();
 }
@@ -773,7 +772,7 @@ function renderRanking(){
     .sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
   if(!entries.length){list.innerHTML='<div class="empty-state"><span style="font-size:32px;display:block;margin-bottom:8px">🏆</span>No picks submitted yet</div>';return;}
   const medals=['🥇','🥈','🥉'];
-  list.innerHTML=entries.map((e,i)=>'<div class="ranking-row'+(e.name===currentUser?' me':'')+'"><div class="rank-pos">'+(medals[i]||'#'+(i+1))+'</div><div style="flex:1"><div class="rank-name">'+e.emoji+' '+e.name+(e.name===currentUser?'<span class="badge">you</span>':'')+'</div><div class="rank-detail">'+(e.points===1?'1 point':e.points+' points')+'</div></div><div class="rank-pts">'+e.points+'</div></div>').join('');
+  list.innerHTML=entries.map((e,i)=>'<div class="ranking-row'+(e.name===currentUser?' me':'')+'"><div class="rank-pos">'+(medals[i]||'#'+(i+1))+'</div><div style="flex:1"><div class="rank-name">'+e.emoji+' '+e.name+(e.name===currentUser?'<span class="badge">you</span>':'')+'</div><div class="rank-detail">points</div></div><div class="rank-pts">'+e.points+'</div></div>').join('');
 }
 
 function setStatus(msg,ok){const el=document.getElementById('save-status');el.textContent=msg;el.className='save-status'+(ok?' saved':'');}
