@@ -285,6 +285,7 @@ input:focus,select:focus{outline:none;border-color:#F07B2F;background:#fff}
 <script>
 const APP_KEY='peachy_men';
 const ADMIN_KEY='peachymen';
+const IS_ADMIN = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
 const PICKS_OPEN = new Date('2026-06-01T00:00:00');
 const PICKS_CLOSE = new Date('2026-06-10T23:59:59');
 function picksOpen() {
@@ -392,13 +393,14 @@ function checkDeadline(){
     if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.4';}
   } else if(afterClose()){
     banner.style.display='block';
-    banner.textContent='🔒 Picks closed since June 10th. Results being updated by admin.';
-    if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.4';}
-    // Disable all team tiles and bracket buttons
-    document.querySelectorAll('.team-tile, .team-pick, .reset-btn').forEach(el=>{
-      el.style.pointerEvents='none';el.style.opacity='0.7';
-    });
-    document.querySelectorAll('#pick-scorer, #pick-extra-time').forEach(el=>{el.disabled=true;});
+    banner.textContent=IS_ADMIN ? '🔑 Admin mode — picks closed for users.' : '🔒 Picks closed since June 10th. Results being updated by admin.';
+    if(!IS_ADMIN){
+      if(saveBtn){saveBtn.disabled=true;saveBtn.style.opacity='0.4';}
+      document.querySelectorAll('.team-tile, .team-pick, .reset-btn').forEach(el=>{
+        el.style.pointerEvents='none';el.style.opacity='0.7';
+      });
+      document.querySelectorAll('#pick-scorer, #pick-extra-time').forEach(el=>{el.disabled=true;});
+    }
   } else {
     banner.style.display='block';
     banner.style.background='#FFE4D6';
@@ -426,8 +428,7 @@ async function init(){
     return;
   }finally{showLoading(false);}
   setInterval(async()=>{try{await loadAll();renderRanking();}catch(e){}},15000);
-  const urlParams=new URLSearchParams(window.location.search);
-  if(urlParams.get('admin')===ADMIN_KEY){const t=document.getElementById('admin-tab');if(t)t.style.display='';}
+  if(IS_ADMIN){const t=document.getElementById('admin-tab');if(t)t.style.display='';}
 }
 function showLoading(on){document.getElementById('loading').style.display=on?'flex':'none';}
 
