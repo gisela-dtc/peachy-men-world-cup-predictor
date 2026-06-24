@@ -787,11 +787,19 @@ function calcPoints(p,r){
 function renderRanking(){
   const list=document.getElementById('ranking-list');
   const entries=Object.entries(allPredictions)
-    .map(([name,p])=>({name,emoji:p.emoji||'⚽',points:p.points||0}))
+    .map(([name,p])=>{
+      const hasGroups=p.groups&&Object.values(p.groups).some(g=>g&&g.length>0);
+      return {name,emoji:p.emoji||'⚽',points:p.points||0,hasPicks:hasGroups};
+    })
     .sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
   if(!entries.length){list.innerHTML='<div class="empty-state"><span style="font-size:32px;display:block;margin-bottom:8px">🏆</span>No picks submitted yet</div>';return;}
   const medals=['🥇','🥈','🥉'];
-  list.innerHTML=entries.map((e,i)=>'<div class="ranking-row'+(e.name===currentUser?' me':'')+'"><div class="rank-pos">'+(medals[i]||'#'+(i+1))+'</div><div style="flex:1"><div class="rank-name">'+e.emoji+' '+e.name+(e.name===currentUser?'<span class="badge">you</span>':'')+'</div><div class="rank-detail">points</div></div><div class="rank-pts">'+e.points+'</div></div>').join('');
+  list.innerHTML=entries.map((e,i)=>{
+    const pos=e.hasPicks?(medals[i]||'#'+(i+1)):'—';
+    const detail=e.hasPicks?(e.points===1?'1 point':e.points+' points'):'sin picks cargados';
+    const ptsDisplay=e.hasPicks?e.points:'—';
+    return '<div class="ranking-row'+(e.name===currentUser?' me':'')+'"><div class="rank-pos">'+pos+'</div><div style="flex:1"><div class="rank-name">'+e.emoji+' '+e.name+(e.name===currentUser?'<span class="badge">you</span>':'')+'</div><div class="rank-detail">'+detail+'</div></div><div class="rank-pts" style="'+(e.hasPicks?'':'color:#ccc;font-size:16px')+'">'+ptsDisplay+'</div></div>';
+  }).join('');
 }
 
 function setStatus(msg,ok){const el=document.getElementById('save-status');el.textContent=msg;el.className='save-status'+(ok?' saved':'');}
