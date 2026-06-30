@@ -138,7 +138,7 @@ input:focus,select:focus{outline:none;border-color:#F07B2F;background:#fff}
 <div class="tabs">
   <div class="tab active" onclick="showPage('home')">🏠 Home</div>
   <div class="tab" onclick="showPage('groups')" title="Grupos cerrados — solo visualización">Groups 🔒</div>
-  <div class="tab" onclick="showPage('bracket')">Bracket</div>
+  <div class="tab" id="tab-bracket" onclick="showPage('bracket')">Bracket</div>
   <div class="tab" onclick="showPage('specials')">Specials</div>
   <div class="tab" onclick="showPage('ranking')">Ranking</div>
   <div class="tab" id="admin-tab" style="display:none" onclick="showPage('admin')">Admin</div>
@@ -286,7 +286,7 @@ const ADMIN_KEY='peachymen';
 const IS_ADMIN = new URLSearchParams(window.location.search).get('admin') === ADMIN_KEY;
 const PICKS_OPEN = new Date('2026-06-01T00:00:00');
 const PICKS_CLOSE = new Date('2026-06-10T23:59:59');
-const BRACKET_CLOSE = new Date('2026-06-30T15:00:00Z'); // 12pm ARG del 30/6
+const BRACKET_CLOSE = new Date('2026-07-01T15:00:00Z'); // 12pm ARG del 1/7
 function picksOpen() { return false; }
 function beforeOpen() { return false; }
 function afterClose() { return true; }
@@ -401,7 +401,7 @@ function checkDeadline(){
     banner.style.display='block';
     if(bracketOpen()){
       banner.style.background='#FFE4D6';
-      banner.textContent=IS_ADMIN ? '🔑 Admin mode activo.' : '⚽ Groups closed — submit your bracket picks before June 30th 12pm!';
+      banner.textContent=IS_ADMIN ? '🔑 Admin mode activo.' : '⚽ Groups closed — submit your bracket picks before July 1st 12pm!';
     } else {
       banner.style.background='#FFF8F5';
       banner.textContent=IS_ADMIN ? '🔑 Admin mode activo.' : '🔒 All picks closed. Results being updated by admin.';
@@ -417,6 +417,8 @@ function checkDeadline(){
         document.querySelectorAll('.team-pick').forEach(el=>{
           el.style.pointerEvents='none';
         });
+        const bracketTab=document.getElementById('tab-bracket');
+        if(bracketTab){bracketTab.textContent='Bracket 🔒';bracketTab.title='Bracket cerrado — solo visualización';}
       }
     }
   } else {
